@@ -4,6 +4,7 @@ const Admin = new mongoose.Schema({
   Email: { type: String, unique: true },
 });
 const lead = new mongoose.Schema({
+  Date: { type: Date, required: true },
   Name: String,
   Email: { type: String},
   Number: Number,

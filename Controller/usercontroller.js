@@ -31,10 +31,10 @@ const addAdmin = async (req, res) => {
 };
 
 const addLead = async (req, res) => {
-  const { Name, Email, Number, AreaOfInterest, Message } = req.body;
+  const { Name, Email, Number, AreaOfInterest, Message,Date } = req.body;
   try {
-    if (Email && Name && Number && AreaOfInterest && Message) {
-      await newLeads.create({ Name, Email, Number, AreaOfInterest, Message });
+    if (Email && Name && Number && AreaOfInterest && Message && Date) {
+      await newLeads.create({ Name, Email, Number, AreaOfInterest, Message ,Date});
       res.send("Lead added successfully");
     } else {
       res.send("Incomplete data provided");
@@ -107,7 +107,8 @@ const deleteCareerLead = async (req, res) => {
 };
 const updateCareerLead = async (req, res) => {
   const { id } = req.params;
-  const { Date, JobDescription, Location, Description, RequiredSkill } = req.body;
+  const { Date, JobDescription, Location, Description, RequiredSkill } =
+    req.body;
 
   try {
     const updatedLead = await newCareerLead.findByIdAndUpdate(
@@ -117,7 +118,10 @@ const updateCareerLead = async (req, res) => {
     );
 
     if (updatedLead) {
-      res.json({ message: "Career lead updated successfully", data: updatedLead });
+      res.json({
+        message: "Career lead updated successfully",
+        data: updatedLead,
+      });
     } else {
       res.status(404).json({ message: "Career lead not found" });
     }
@@ -127,5 +131,12 @@ const updateCareerLead = async (req, res) => {
   }
 };
 
-
-module.exports = { addAdmin, addLead, getLead, CareerLead, getCareerLeads,updateCareerLead ,deleteCareerLead};
+module.exports = {
+  addAdmin,
+  addLead,
+  getLead,
+  CareerLead,
+  getCareerLeads,
+  updateCareerLead,
+  deleteCareerLead,
+};

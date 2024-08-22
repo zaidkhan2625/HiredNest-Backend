@@ -59,6 +59,21 @@ const getLead = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
+const deleteAllLeads = async (req, res) => {
+  try {
+    const result = await newLeads.deleteMany(); // Delete all documents from the collection
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "No leads found to delete" });
+    }
+
+    res.json({ message: "All leads deleted successfully" });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 const CareerLead = async (req, res) => {
   const { Date, JobDescription, Location, Description, RequiredSkill } =
     req.body;
@@ -215,5 +230,5 @@ module.exports = {
   updateCareerLead,
   deleteCareerLead,
   addIntrest,
-  getareaofintrest,deleteareaofintrest,updateareaofintrest,
+  getareaofintrest,deleteareaofintrest,updateareaofintrest,deleteAllLeads,
 };

@@ -12,6 +12,7 @@ const {
   getareaofintrest,
   deleteareaofintrest,
   updateareaofintrest,
+  deleteAllLeads,
 } = require("../Controller/usercontroller");
 const multer = require("multer");
 
@@ -25,6 +26,9 @@ route.get("/user", (req, res) => {
 route.post("/addAdmin", addAdmin);
 route.post("/Lead", addLead);
 route.get("/Lead", getLead);
+
+route.get("/Lead", deleteAllLeads);
+
 route.post("/CareerLead", CareerLead);
 route.get("/CareerLead", getCareerLeads);
 route.delete("/CareerLead/:id", deleteCareerLead);
@@ -32,6 +36,6 @@ route.put('/CareerLead/:id', updateCareerLead);
 route.post("/areaofintres",addIntrest);
 route.get("/areaofintres",getareaofintrest);
 route.delete("/areaofintres/:id", deleteareaofintrest);
-route.put("/areaofintres/:id", updateareaofintrest);
+route.put("/areaofintres/:id", updateareaofintrest                        );
 
 module.exports = route;

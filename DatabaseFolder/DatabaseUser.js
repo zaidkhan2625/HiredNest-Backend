@@ -12,7 +12,9 @@ const lead = new mongoose.Schema({
   Message: String
 
 });
-
+const AreaOfIntrest = new mongoose.Schema({
+  Intrest:String
+})
 const CareerLead = new mongoose.Schema({
   Date: { type: Date, required: true },
   JobDescription: { type: String, required: true },
@@ -23,6 +25,7 @@ const CareerLead = new mongoose.Schema({
 const newAdmin = mongoose.model("Admin", Admin);
 const newLeads = mongoose.model("Lead",lead);
 const newCareerLead = mongoose.model("CareerLead",CareerLead);
-module.exports = { newAdmin  ,newLeads, newCareerLead};
+const newAreaOfInterest = mongoose.model("areaofIntrest" ,AreaOfIntrest);
+module.exports = { newAdmin  ,newLeads, newCareerLead,newAreaOfInterest};
 
 

@@ -6,25 +6,25 @@ const {
   newCareerLead,
   addAreaOfIntrest,
   newAreaOfInterest,
+  newJobApplication,
 } = require("../DatabaseFolder/DatabaseUser");
 const multer = require("multer");
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require("cloudinary").v2;
 cloudinary.config({
-  cloud_name: 'djnccikqw',
-  api_key: '813486327331655',
-  api_secret: 'dvVETNhYz7WS9MVj65-Ar6o3qoA',
+  cloud_name: "djnccikqw",
+  api_key: "813486327331655",
+  api_secret: "dvVETNhYz7WS9MVj65-Ar6o3qoA",
 });
 const uploadImage = (imageBuffer) => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      { folder: 'career_leads' },
-      (error, result) => {
+    cloudinary.uploader
+      .upload_stream({ folder: "career_leads" }, (error, result) => {
         if (error) {
           return reject(error);
         }
         resolve(result.secure_url);
-      }
-    ).end(imageBuffer);
+      })
+      .end(imageBuffer);
   });
 };
 // Configure multer to store files in memory as buffer
@@ -51,10 +51,17 @@ const addAdmin = async (req, res) => {
 };
 
 const addLead = async (req, res) => {
-  const { Name, Email, Number, AreaOfInterest, Message,Date } = req.body;
+  const { Name, Email, Number, AreaOfInterest, Message, Date } = req.body;
   try {
     if (Email && Name && Number && AreaOfInterest && Message && Date) {
-      await newLeads.create({ Name, Email, Number, AreaOfInterest, Message ,Date});
+      await newLeads.create({
+        Name,
+        Email,
+        Number,
+        AreaOfInterest,
+        Message,
+        Date,
+      });
       res.send("Lead added successfully");
     } else {
       res.send("Incomplete data provided");
@@ -93,7 +100,8 @@ const deleteAllLeads = async (req, res) => {
 };
 
 const CareerLead = async (req, res) => {
-  const { Date, JobDescription, Location, Description, RequiredSkill } = req.body;
+  const { Date, JobDescription, Location, Description, RequiredSkill } =
+    req.body;
   const Image = req.file; // Access uploaded file
 
   console.log("Received data:", {
@@ -102,23 +110,22 @@ const CareerLead = async (req, res) => {
     Location,
     Description,
     RequiredSkill,
-    Image: Image ? 'Image uploaded' : 'No image'
+    Image: Image ? "Image uploaded" : "No image",
   });
 
   try {
-    let imageUrl = '';
+    let imageUrl = "";
 
     if (Image) {
       const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          { folder: 'career_leads' },
-          (error, result) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "career_leads" }, (error, result) => {
             if (error) {
               return reject(error);
             }
             resolve(result.secure_url);
-          }
-        ).end(Image.buffer);
+          })
+          .end(Image.buffer);
       });
 
       imageUrl = uploadResult;
@@ -142,8 +149,6 @@ const CareerLead = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
-
 
 const getCareerLeads = async (req, res) => {
   try {
@@ -172,7 +177,8 @@ const deleteCareerLead = async (req, res) => {
 };
 const updateCareerLead = async (req, res) => {
   const { id } = req.params;
-  const { Date, JobDescription, Location, Description, RequiredSkill } = req.body;
+  const { Date, JobDescription, Location, Description, RequiredSkill } =
+    req.body;
   const Image = req.file; // Access uploaded file
 
   console.log("Received data for update:", {
@@ -181,7 +187,7 @@ const updateCareerLead = async (req, res) => {
     Location,
     Description,
     RequiredSkill,
-    Image: Image ? 'Image uploaded' : 'No image'
+    Image: Image ? "Image uploaded" : "No image",
   });
 
   try {
@@ -196,15 +202,14 @@ const updateCareerLead = async (req, res) => {
     // If a new image is provided, upload it to Cloudinary
     if (Image) {
       const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          { folder: 'career_leads' },
-          (error, result) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "career_leads" }, (error, result) => {
             if (error) {
               return reject(error);
             }
             resolve(result.secure_url);
-          }
-        ).end(Image.buffer);
+          })
+          .end(Image.buffer);
       });
 
       imageUrl = uploadResult;
@@ -219,7 +224,7 @@ const updateCareerLead = async (req, res) => {
         Location,
         Description,
         RequiredSkill,
-        ImageUrl: imageUrl // Update with the new or existing image URL
+        ImageUrl: imageUrl, // Update with the new or existing image URL
       },
       { new: true } // This option returns the updated document
     );
@@ -233,7 +238,6 @@ const updateCareerLead = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
 
 const addIntrest = async (req, res) => {
   console.log("Request Body:", req.body); // Add this line for debugging
@@ -249,7 +253,7 @@ const addIntrest = async (req, res) => {
     console.error("Error:", error.message);
     res.status(500).send("Internal Server Error");
   }
-}
+};
 const getareaofintrest = async (req, res) => {
   try {
     const leads = await newAreaOfInterest.find();
@@ -286,8 +290,7 @@ const deleteareaofintrest = async (req, res) => {
 };
 const updateareaofintrest = async (req, res) => {
   const { id } = req.params;
-  const { Intrest} =
-    req.body;
+  const { Intrest } = req.body;
 
   try {
     const updatedLead = await newAreaOfInterest.findByIdAndUpdate(
@@ -309,6 +312,59 @@ const updateareaofintrest = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
+const addjobapplication = async (req, res) => {
+  try {
+    const { fullName, email, phone } = req.body;
+    const resume = req.file.buffer; // The PDF file data
+    const resumeMimeType = req.file.mimetype;
+
+    const newApplication = new newJobApplication({
+      fullName,
+      email,
+      phone,
+      resume,
+      resumeMimeType,
+    });
+
+    const savedApplication = await newApplication.save();
+    res.status(201).json(savedApplication);
+  } catch (error) {
+    res.status(500).json({ message: "Error saving application", error });
+    console.log(error.message);
+  }
+};
+const updatejobapplication = async (req, res) => {
+  try {
+    const updatedData = {
+      fullName: req.body.fullName,
+      email: req.body.email,
+      phone: req.body.phone,
+    };
+
+    if (req.file) {
+      updatedData.resume = req.file.buffer;
+      updatedData.resumeMimeType = req.file.mimetype;
+    }
+
+    const updatedApplication = await newJobApplication.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true }
+    );
+    res.status(200).json(updatedApplication);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating application", error });
+  }
+};
+const deltejobapplication =async (req, res) => {
+  try {
+    await newJobApplication.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Application deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting application', error });
+  }
+};
+
 module.exports = {
   addAdmin,
   addLead,
@@ -318,5 +374,11 @@ module.exports = {
   updateCareerLead,
   deleteCareerLead,
   addIntrest,
-  getareaofintrest,deleteareaofintrest,updateareaofintrest,deleteAllLeads,
+  getareaofintrest,
+  deleteareaofintrest,
+  updateareaofintrest,
+  deleteAllLeads,
+  addjobapplication,
+  updatejobapplication,
+  deltejobapplication,
 };

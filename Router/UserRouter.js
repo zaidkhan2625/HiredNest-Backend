@@ -13,9 +13,12 @@ const {
   deleteareaofintrest,
   updateareaofintrest,
   deleteAllLeads,
+  addjobapplication,
+  updatejobapplication,
+  deltejobapplication,
 } = require("../Controller/usercontroller");
-const multer = require('multer');
-const path = require('path');
+const multer = require("multer");
+const path = require("path");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -32,13 +35,17 @@ route.get("/Lead", getLead);
 
 route.delete("/Lead", deleteAllLeads);
 
-route.post("/CareerLead",upload.single('Image'), CareerLead);
+route.post("/CareerLead", upload.single("Image"), CareerLead);
 route.get("/CareerLead", getCareerLeads);
 route.delete("/CareerLead/:id", deleteCareerLead);
-route.put('/CareerLead/:id',upload.single('Image'), updateCareerLead);
-route.post("/areaofintres",addIntrest);
-route.get("/areaofintres",getareaofintrest);
+route.put("/CareerLead/:id", upload.single("Image"), updateCareerLead);
+route.post("/areaofintres", addIntrest);
+route.get("/areaofintres", getareaofintrest);
 route.delete("/areaofintres/:id", deleteareaofintrest);
-route.put("/areaofintres/:id", updateareaofintrest                        );
+route.put("/areaofintres/:id", updateareaofintrest);
+route.post("/jobapplication", upload.single('resume'),addjobapplication);
+route.put("/jobapplication/:id", upload.single('resume'),updatejobapplication);
+route.delete("/jobapplication/:id", deltejobapplication);
+
 
 module.exports = route;

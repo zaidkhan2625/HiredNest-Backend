@@ -21,7 +21,9 @@ const CareerLead = new mongoose.Schema({
   Location: { type: String, required: true },
   Description: { type: String, required: true },
   RequiredSkill: { type: String, required: true },
+  ImageUrl: { type: String }, // New field for the image URL
 });
+
 const newAdmin = mongoose.model("Admin", Admin);
 const newLeads = mongoose.model("Lead",lead);
 const newCareerLead = mongoose.model("CareerLead",CareerLead);

@@ -8,7 +8,25 @@ const {
   newAreaOfInterest,
 } = require("../DatabaseFolder/DatabaseUser");
 const multer = require("multer");
-
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: 'djnccikqw',
+  api_key: '813486327331655',
+  api_secret: 'dvVETNhYz7WS9MVj65-Ar6o3qoA',
+});
+const uploadImage = (imageBuffer) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { folder: 'career_leads' },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result.secure_url);
+      }
+    ).end(imageBuffer);
+  });
+};
 // Configure multer to store files in memory as buffer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -75,10 +93,37 @@ const deleteAllLeads = async (req, res) => {
 };
 
 const CareerLead = async (req, res) => {
-  const { Date, JobDescription, Location, Description, RequiredSkill } =
-    req.body;
+  const { Date, JobDescription, Location, Description, RequiredSkill } = req.body;
+  const Image = req.file; // Access uploaded file
+
+  console.log("Received data:", {
+    Date,
+    JobDescription,
+    Location,
+    Description,
+    RequiredSkill,
+    Image: Image ? 'Image uploaded' : 'No image'
+  });
 
   try {
+    let imageUrl = '';
+
+    if (Image) {
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'career_leads' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result.secure_url);
+          }
+        ).end(Image.buffer);
+      });
+
+      imageUrl = uploadResult;
+    }
+
     if (Date && JobDescription && Location && Description && RequiredSkill) {
       await newCareerLead.create({
         Date,
@@ -86,6 +131,7 @@ const CareerLead = async (req, res) => {
         Location,
         Description,
         RequiredSkill,
+        ImageUrl: imageUrl,
       });
       res.send("Career lead added successfully");
     } else {
@@ -96,6 +142,8 @@ const CareerLead = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
+
+
 
 const getCareerLeads = async (req, res) => {
   try {
@@ -124,29 +172,69 @@ const deleteCareerLead = async (req, res) => {
 };
 const updateCareerLead = async (req, res) => {
   const { id } = req.params;
-  const { Date, JobDescription, Location, Description, RequiredSkill } =
-    req.body;
+  const { Date, JobDescription, Location, Description, RequiredSkill } = req.body;
+  const Image = req.file; // Access uploaded file
+
+  console.log("Received data for update:", {
+    Date,
+    JobDescription,
+    Location,
+    Description,
+    RequiredSkill,
+    Image: Image ? 'Image uploaded' : 'No image'
+  });
 
   try {
+    // Check if the lead exists
+    const existingLead = await newCareerLead.findById(id);
+    if (!existingLead) {
+      return res.status(404).json({ message: "Career lead not found" });
+    }
+
+    let imageUrl = existingLead.ImageUrl; // Keep existing image URL if no new image is provided
+
+    // If a new image is provided, upload it to Cloudinary
+    if (Image) {
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'career_leads' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result.secure_url);
+          }
+        ).end(Image.buffer);
+      });
+
+      imageUrl = uploadResult;
+    }
+
+    // Update the lead with the provided fields
     const updatedLead = await newCareerLead.findByIdAndUpdate(
       id,
-      { Date, JobDescription, Location, Description, RequiredSkill },
+      {
+        Date,
+        JobDescription,
+        Location,
+        Description,
+        RequiredSkill,
+        ImageUrl: imageUrl // Update with the new or existing image URL
+      },
       { new: true } // This option returns the updated document
     );
 
-    if (updatedLead) {
-      res.json({
-        message: "Career lead updated successfully",
-        data: updatedLead,
-      });
-    } else {
-      res.status(404).json({ message: "Career lead not found" });
-    }
+    res.json({
+      message: "Career lead updated successfully",
+      data: updatedLead,
+    });
   } catch (error) {
     console.error("Error updating career lead:", error.message);
     res.status(500).send("Internal Server Error");
   }
 };
+
+
 const addIntrest = async (req, res) => {
   console.log("Request Body:", req.body); // Add this line for debugging
   const { Intrest } = req.body;

@@ -364,6 +364,36 @@ const deltejobapplication =async (req, res) => {
     res.status(500).json({ message: 'Error deleting application', error });
   }
 };
+const getjobApplication =  async (req, res) => {
+  try {
+    const leads = await newJobApplication.find();
+    if (!leads.length) {
+      return res.status(404).json({ message: "No leads found" });
+    }
+    res.json(leads);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).send("Internal Server Error");
+  }
+};
+const getjobinary =async (req, res) => {
+  try {
+    const jobApplication = await newJobApplication.findById(req.params.id);
+    if (!jobApplication || !jobApplication.resume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+
+    // Set the content type for the PDF
+    res.setHeader('Content-Type', jobApplication.resumeMimeType);
+    res.setHeader('Content-Disposition', 'attachment; filename="resume.pdf"');
+    
+    // Send the resume binary data
+    res.send(Buffer.from(jobApplication.resume, 'base64'));
+  } catch (error) {
+    console.error("Error downloading resume:", error.message);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 module.exports = {
   addAdmin,
@@ -381,4 +411,6 @@ module.exports = {
   addjobapplication,
   updatejobapplication,
   deltejobapplication,
+  getjobApplication,
+  getjobinary,
 };

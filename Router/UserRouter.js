@@ -16,6 +16,8 @@ const {
   addjobapplication,
   updatejobapplication,
   deltejobapplication,
+  getjobApplication,
+  getjobinary,
 } = require("../Controller/usercontroller");
 const multer = require("multer");
 const path = require("path");
@@ -46,6 +48,8 @@ route.put("/areaofintres/:id", updateareaofintrest);
 route.post("/jobapplication", upload.single('resume'),addjobapplication);
 route.put("/jobapplication/:id", upload.single('resume'),updatejobapplication);
 route.delete("/jobapplication/:id", deltejobapplication);
+route.get("/jobapplication", getjobApplication);
+route.get('/jobapplication/:id/resume',getjobinary);
 
 
 module.exports = route;

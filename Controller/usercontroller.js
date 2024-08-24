@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken");
+const express = require('express');
 const bcrypt = require("bcryptjs");
 const {
   newAdmin,
   newLeads,
   newCareerLead,
-  addAreaOfIntrest,
+ 
   newAreaOfInterest,
   newJobApplication,
 } = require("../DatabaseFolder/DatabaseUser");
@@ -29,27 +30,70 @@ const uploadImage = (imageBuffer) => {
 };
 // Configure multer to store files in memory as buffer
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
 const addAdmin = async (req, res) => {
-  const { Email, password } = req.body;
   try {
-    const userExists = await newAdmin.findOne({ Email });
-    if (userExists) {
-      res.send("Email already exists");
-    } else if (Email && password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await newAdmin.create({ Email, password: hashedPassword });
-      res.send("Admin added successfully");
-    } else {
-      res.send("Incomplete data provided");
+    const { Email, password } = req.body;
+    console.log(Email , password);
+    if (!Email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    // Check if the email already exists
+    const existingAdmin = await newAdmin.findOne({ Email });
+    if (existingAdmin) {
+      return res.status(400).json({ message: 'Admin already exists' });
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Log the hashed password for debugging (remove in production)
+    console.log('Hashed Password:', hashedPassword);
+
+    // Create a new admin
+    const admin = new newAdmin({
+      Email,
+      password: hashedPassword
+    });
+
+    await admin.save();
+
+    res.status(201).json({ message: 'Admin created successfully' });
   } catch (error) {
-    console.error("Error:", error.message);
-    res.status(500).send("Internal Server Error");
+    console.error('Error in addAdmin function:', error); // Log the error with more context
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+const loginAdmin = async (req, res) => {
+  try {
+    const { Email, password } = req.body;
+    if (!Email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
+    const admin = await newAdmin.findOne({ Email });
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate a token
+    const token = jwt.sign(
+      { adminId: admin._id },
+      'your_jwt_secret_key', // Replace with your secret key
+      { expiresIn: '1h' } // Token expiration time
+    );
+
+    res.status(200).json({ message: 'Login successful', token });
+  } catch (error) {
+    console.error('Error in loginAdmin function:', error); 
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 const addLead = async (req, res) => {
   const { Name, Email, Number, AreaOfInterest, Message, Date } = req.body;
   try {
@@ -356,15 +400,15 @@ const updatejobapplication = async (req, res) => {
     res.status(500).json({ message: "Error updating application", error });
   }
 };
-const deltejobapplication =async (req, res) => {
+const deltejobapplication = async (req, res) => {
   try {
     await newJobApplication.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: 'Application deleted successfully' });
+    res.status(200).json({ message: "Application deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting application', error });
+    res.status(500).json({ message: "Error deleting application", error });
   }
 };
-const getjobApplication =  async (req, res) => {
+const getjobApplication = async (req, res) => {
   try {
     const leads = await newJobApplication.find();
     if (!leads.length) {
@@ -376,7 +420,7 @@ const getjobApplication =  async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-const getjobinary =async (req, res) => {
+const getjobinary = async (req, res) => {
   try {
     const jobApplication = await newJobApplication.findById(req.params.id);
     if (!jobApplication || !jobApplication.resume) {
@@ -384,11 +428,11 @@ const getjobinary =async (req, res) => {
     }
 
     // Set the content type for the PDF
-    res.setHeader('Content-Type', jobApplication.resumeMimeType);
-    res.setHeader('Content-Disposition', 'attachment; filename="resume.pdf"');
-    
+    res.setHeader("Content-Type", jobApplication.resumeMimeType);
+    res.setHeader("Content-Disposition", 'attachment; filename="resume.pdf"');
+
     // Send the resume binary data
-    res.send(Buffer.from(jobApplication.resume, 'base64'));
+    res.send(Buffer.from(jobApplication.resume, "base64"));
   } catch (error) {
     console.error("Error downloading resume:", error.message);
     res.status(500).send("Internal Server Error");
@@ -413,4 +457,5 @@ module.exports = {
   deltejobapplication,
   getjobApplication,
   getjobinary,
+  loginAdmin
 };

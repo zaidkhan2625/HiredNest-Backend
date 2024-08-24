@@ -1,8 +1,16 @@
 const mongoose = require("mongoose");
-const Admin = new mongoose.Schema({
-  password: String,
-  Email: { type: String, unique: true },
+const Admin=  new mongoose.Schema({
+  Email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
 });
+
 const lead = new mongoose.Schema({
   Date: { type: Date, required: true },
   Name: String,
